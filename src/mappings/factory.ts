@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
 import { log } from '@graphprotocol/graph-ts'
-import { PairCreated } from '../types/Factory/Factory'
-import { Bundle, Pair, Token, UniswapFactory } from '../types/schema'
+import { PairCreated, SetSwapFeeBPCall } from '../types/Factory/Factory'
+import { Bundle, Pair, Token, BidelityFactory } from '../types/schema'
 import { Pair as PairTemplate } from '../types/templates'
 import {
   FACTORY_ADDRESS,
@@ -11,13 +11,13 @@ import {
   fetchTokenTotalSupply,
   ZERO_BD,
   ZERO_BI,
+  factoryContract
 } from './helpers'
 
-export function handleNewPair(event: PairCreated): void {
-  // load factory (create if first exchange)
-  let factory = UniswapFactory.load(FACTORY_ADDRESS)
+function loadFactory(): BidelityFactory {
+  let factory = BidelityFactory.load(FACTORY_ADDRESS)
   if (factory === null) {
-    factory = new UniswapFactory(FACTORY_ADDRESS)
+    factory = new BidelityFactory(FACTORY_ADDRESS)
     factory.pairCount = 0
     factory.totalVolumeETH = ZERO_BD
     factory.totalLiquidityETH = ZERO_BD
@@ -25,6 +25,33 @@ export function handleNewPair(event: PairCreated): void {
     factory.untrackedVolumeUSD = ZERO_BD
     factory.totalLiquidityUSD = ZERO_BD
     factory.txCount = ZERO_BI
+
+    factory.profit = factoryContract.swapFeeBP()
+
+    // create new bundle
+    let bundle = new Bundle('1')
+    bundle.ethPrice = ZERO_BD
+    bundle.save()
+  }
+  factory.pairCount = factory.pairCount + 1
+  factory.save()
+  return factory as BidelityFactory
+}
+
+export function handleNewPair(event: PairCreated): void {
+  // load factory (create if first exchange)
+  let factory = BidelityFactory.load(FACTORY_ADDRESS)
+  if (factory === null) {
+    factory = new BidelityFactory(FACTORY_ADDRESS)
+    factory.pairCount = 0
+    factory.totalVolumeETH = ZERO_BD
+    factory.totalLiquidityETH = ZERO_BD
+    factory.totalVolumeUSD = ZERO_BD
+    factory.untrackedVolumeUSD = ZERO_BD
+    factory.totalLiquidityUSD = ZERO_BD
+    factory.txCount = ZERO_BI
+
+    factory.profit = factoryContract.swapFeeBP()
 
     // create new bundle
     let bundle = new Bundle('1')
@@ -111,5 +138,13 @@ export function handleNewPair(event: PairCreated): void {
   token0.save()
   token1.save()
   pair.save()
+}
+
+/**
+ * TODO: перевірити що буде якщо викликати не owner
+ */
+export function handlerSetSwapFeeBP(call: SetSwapFeeBPCall): void {
+  const factory = loadFactory()
+  factory.profit = call.inputs.value
   factory.save()
 }
