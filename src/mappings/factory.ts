@@ -140,9 +140,6 @@ export function handleNewPair(event: PairCreated): void {
   pair.save()
 }
 
-/**
- * TODO: перевірити що буде якщо викликати не owner
- */
 export function handlerSetSwapFeeBP(call: SetSwapFeeBPCall): void {
   const factory = loadFactory()
   factory.profit = call.inputs.value

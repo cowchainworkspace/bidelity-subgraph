@@ -301,3 +301,9 @@ type TokenDayData @entity {
   # price stats
   priceUSD: BigDecimal!
 }
+
+type BdltyTokens @entity(immutable: false) {
+  id: ID!
+  issued: BigInt!
+  burned: BigInt!
+}
