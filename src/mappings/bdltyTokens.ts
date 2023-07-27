@@ -13,7 +13,7 @@ export function loadBdltyToken(): BdltyTokens {
     token.issued = ZERO_BI
   }
 
-  return token
+  return token as BdltyTokens
 }
 
 export function burn(call: BurnCall): void {

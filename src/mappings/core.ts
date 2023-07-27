@@ -22,7 +22,8 @@ import {
   createLiquidityPosition,
   ZERO_BD,
   BI_18,
-  createLiquiditySnapshot
+  createLiquiditySnapshot,
+  MAX_BP
 } from './helpers'
 
 function isCompleteMint(mintId: string): boolean {
@@ -392,6 +393,12 @@ export function handleBurn(event: Burn): void {
   updateTokenDayData(token1 as Token, event)
 }
 
+function getFee(amountIn: BigDecimal): BigDecimal {
+  const factory = BidelityFactory.load(FACTORY_ADDRESS)
+  const fee = amountIn.times(factory.swapFeeBP.toBigDecimal()).div(MAX_BP)
+  return fee
+}
+
 export function handleSwap(event: Swap): void {
   let pair = Pair.load(event.address.toHexString())
   let token0 = Token.load(pair.token0)
@@ -490,8 +497,12 @@ export function handleSwap(event: Swap): void {
   swap.to = event.params.to
   swap.from = event.transaction.from
   swap.logIndex = event.logIndex
+  swap.hash = event.transaction.hash.toHexString()
+
   // use the tracked amount if we have it
   swap.amountUSD = trackedAmountUSD === ZERO_BD ? derivedAmountUSD : trackedAmountUSD
+
+  swap.feeUsd = getFee(swap.amountUSD)
   swap.save()
 
   // update the transaction

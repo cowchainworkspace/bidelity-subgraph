@@ -2,7 +2,9 @@ type BidelityFactory @entity {
   # factory address
   id: ID!
 
-  profit: BigInt!
+  swapFeeBP: BigInt!
+  removeLiquidityFeeBP: BigInt!
+  addLiquidityFeeBP: BigInt!
 
   # pair info
   pairCount: Int!
@@ -210,6 +212,9 @@ type Swap @entity {
 
   # derived info
   amountUSD: BigDecimal!
+
+  hash: String!
+  feeUsd: BigDecimal!
 }
 
 # stores for USD calculations
@@ -307,3 +312,9 @@ type BdltyTokens @entity(immutable: false) {
   issued: BigInt!
   burned: BigInt!
 }
+
+type SwapCall @entity {
+  id: ID!
+  pair: Pair!
+}
+

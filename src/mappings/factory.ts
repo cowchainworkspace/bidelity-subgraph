@@ -26,7 +26,9 @@ function loadFactory(): BidelityFactory {
     factory.totalLiquidityUSD = ZERO_BD
     factory.txCount = ZERO_BI
 
-    factory.profit = factoryContract.swapFeeBP()
+    factory.swapFeeBP = factoryContract.swapFeeBP()
+    factory.removeLiquidityFeeBP = factoryContract.removeLiquidityFeeBP()
+    factory.addLiquidityFeeBP = factoryContract.addLiquidityFeeBP()
 
     // create new bundle
     let bundle = new Bundle('1')
@@ -51,7 +53,9 @@ export function handleNewPair(event: PairCreated): void {
     factory.totalLiquidityUSD = ZERO_BD
     factory.txCount = ZERO_BI
 
-    factory.profit = factoryContract.swapFeeBP()
+    factory.swapFeeBP = factoryContract.swapFeeBP()
+    factory.removeLiquidityFeeBP = factoryContract.removeLiquidityFeeBP()
+    factory.addLiquidityFeeBP = factoryContract.addLiquidityFeeBP()
 
     // create new bundle
     let bundle = new Bundle('1')
@@ -142,6 +146,18 @@ export function handleNewPair(event: PairCreated): void {
 
 export function handlerSetSwapFeeBP(call: SetSwapFeeBPCall): void {
   const factory = loadFactory()
-  factory.profit = call.inputs.value
+  factory.swapFeeBP = call.inputs.value
+  factory.save()
+}
+
+export function handlerSetRemoveLiquidityFeeBP(call: SetSwapFeeBPCall): void {
+  const factory = loadFactory()
+  factory.removeLiquidityFeeBP = call.inputs.value
+  factory.save()
+}
+
+export function handlerSetAddLiquidityFeeBP(call: SetSwapFeeBPCall): void {
+  const factory = loadFactory()
+  factory.addLiquidityFeeBP = call.inputs.value
   factory.save()
 }
