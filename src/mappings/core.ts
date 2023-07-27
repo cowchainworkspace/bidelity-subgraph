@@ -393,11 +393,6 @@ export function handleBurn(event: Burn): void {
   updateTokenDayData(token1 as Token, event)
 }
 
-function getFee(amountIn: BigDecimal): BigDecimal {
-  const factory = BidelityFactory.load(FACTORY_ADDRESS)
-  const fee = amountIn.times(factory.swapFeeBP.toBigDecimal()).div(MAX_BP)
-  return fee
-}
 
 export function handleSwap(event: Swap): void {
   let pair = Pair.load(event.address.toHexString())
@@ -462,7 +457,7 @@ export function handleSwap(event: Swap): void {
   bidelity.txCount = bidelity.txCount.plus(ONE_BI)
 
   // save entities
-  pair.save()
+
   token0.save()
   token1.save()
   bidelity.save()
@@ -498,13 +493,15 @@ export function handleSwap(event: Swap): void {
   swap.from = event.transaction.from
   swap.logIndex = event.logIndex
   swap.hash = event.transaction.hash.toHexString()
+  swap.token0Price = pair.token0Price
+  swap.token1Price = pair.token1Price
 
   // use the tracked amount if we have it
   swap.amountUSD = trackedAmountUSD === ZERO_BD ? derivedAmountUSD : trackedAmountUSD
 
-  swap.feeUsd = getFee(swap.amountUSD)
   swap.save()
 
+  pair.save()
   // update the transaction
 
   // TODO: Consider using .concat() for handling array updates to protect

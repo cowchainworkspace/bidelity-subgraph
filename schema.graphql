@@ -99,6 +99,7 @@ type Pair @entity {
   mints: [Mint!]! @derivedFrom(field: "pair")
   burns: [Burn!]! @derivedFrom(field: "pair")
   swaps: [Swap!]! @derivedFrom(field: "pair")
+  lock: Boolean
 }
 
 type User @entity {
@@ -210,11 +211,13 @@ type Swap @entity {
   to: Bytes!
   logIndex: BigInt
 
+  token0Price: BigDecimal!
+  token1Price: BigDecimal!
+
   # derived info
   amountUSD: BigDecimal!
 
   hash: String!
-  feeUsd: BigDecimal!
 }
 
 # stores for USD calculations
@@ -317,4 +320,3 @@ type SwapCall @entity {
   id: ID!
   pair: Pair!
 }
-

@@ -54,13 +54,17 @@ dataSources:
       eventHandlers:
         - event: PairCreated(indexed address,indexed address,address,uint256)
           handler: handleNewPair
-      # callHandlers:
-      #   - function: setSwapFeeBP(uint256)
-      #     handler: handlerSetSwapFeeBP
-      #   - function: setRemoveLiquidityFeeBP(uint256)
-      #     handler: handlerSetRemoveLiquidityFeeBP
-      #   - function: setAddLiquidityFeeBP(uint256)
-      #     handler: handlerSetAddLiquidityFeeBP
+      callHandlers:
+        - function: setSwapFeeBP(uint256)
+          handler: handlerSetSwapFeeBP
+        - function: setRemoveLiquidityFeeBP(uint256)
+          handler: handlerSetRemoveLiquidityFeeBP
+        - function: setAddLiquidityFeeBP(uint256)
+          handler: handlerSetAddLiquidityFeeBP
+        - function: lock(address)
+          handler: handlerLock
+        - function: unlock(address)
+          handler: handlerUnlock
 templates:
   - kind: ethereum/contract
     name: Pair

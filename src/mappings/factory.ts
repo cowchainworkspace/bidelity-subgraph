@@ -1,6 +1,6 @@
 /* eslint-disable prefer-const */
 import { log } from '@graphprotocol/graph-ts'
-import { PairCreated, SetSwapFeeBPCall } from '../types/Factory/Factory'
+import { PairCreated, SetSwapFeeBPCall, LockCall, UnlockCall } from '../types/Factory/Factory'
 import { Bundle, Pair, Token, BidelityFactory } from '../types/schema'
 import { Pair as PairTemplate } from '../types/templates'
 import {
@@ -160,4 +160,19 @@ export function handlerSetAddLiquidityFeeBP(call: SetSwapFeeBPCall): void {
   const factory = loadFactory()
   factory.addLiquidityFeeBP = call.inputs.value
   factory.save()
+}
+
+
+export function handlerLock(call: LockCall): void {
+  const pair = Pair.load(call.inputs.pool.toHexString());
+
+  pair.lock = true;
+  pair.save()
+}
+
+export function handlerUnlock(call: LockCall): void {
+  const pair = Pair.load(call.inputs.pool.toHexString());
+
+  pair.lock = false;
+  pair.save()
 }
