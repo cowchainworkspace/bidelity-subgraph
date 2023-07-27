@@ -313,7 +313,9 @@ export function handleMint(event: Mint): void {
   token0.save()
   token1.save()
 
-  pair.bidelityProfit = pair.bidelityProfit.plus(event.params.fee.toBigDecimal())
+  const fee = convertTokenToDecimal(event.params.fee, BI_18)
+
+  pair.bidelityProfit = pair.bidelityProfit.plus(fee)
 
   pair.save()
   bidelity.save()
@@ -372,7 +374,9 @@ export function handleBurn(event: Burn): void {
   bidelity.txCount = bidelity.txCount.plus(ONE_BI)
   pair.txCount = pair.txCount.plus(ONE_BI)
 
-  pair.bidelityProfit = pair.bidelityProfit.plus(event.params.fee.toBigDecimal())
+  const fee = convertTokenToDecimal(event.params.fee, BI_18)
+
+  pair.bidelityProfit = pair.bidelityProfit.plus(fee)
 
   // update global counter and save
   token0.save()
