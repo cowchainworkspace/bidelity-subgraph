@@ -103,6 +103,7 @@ type Pair @entity {
   swaps: [Swap!]! @derivedFrom(field: "pair")
   lock: Boolean
   swapsAmount: BigInt!
+  bidelityProfit: BigDecimal!
 }
 
 type User @entity {

@@ -22,7 +22,7 @@ import {
   createLiquidityPosition,
   ZERO_BD,
   BI_18,
-  createLiquiditySnapshot,
+  createLiquiditySnapshot
 } from './helpers'
 
 function isCompleteMint(mintId: string): boolean {
@@ -312,6 +312,9 @@ export function handleMint(event: Mint): void {
   // save entities
   token0.save()
   token1.save()
+
+  pair.bidelityProfit = pair.bidelityProfit.plus(event.params.fee.toBigDecimal())
+
   pair.save()
   bidelity.save()
 
@@ -368,6 +371,8 @@ export function handleBurn(event: Burn): void {
   // update txn counts
   bidelity.txCount = bidelity.txCount.plus(ONE_BI)
   pair.txCount = pair.txCount.plus(ONE_BI)
+
+  pair.bidelityProfit = pair.bidelityProfit.plus(event.params.fee.toBigDecimal())
 
   // update global counter and save
   token0.save()
