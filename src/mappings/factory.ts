@@ -122,12 +122,15 @@ export function handleNewPair(event: PairCreated): void {
   pair.createdAtTimestamp = event.block.timestamp
   pair.createdAtBlockNumber = event.block.number
   pair.txCount = ZERO_BI
+  pair.swapsAmount = ZERO_BI
   pair.reserve0 = ZERO_BD
   pair.reserve1 = ZERO_BD
   pair.trackedReserveETH = ZERO_BD
   pair.reserveETH = ZERO_BD
   pair.reserveUSD = ZERO_BD
   pair.totalSupply = ZERO_BD
+  pair.burned = ZERO_BD
+  pair.issued = ZERO_BD
   pair.volumeToken0 = ZERO_BD
   pair.volumeToken1 = ZERO_BD
   pair.volumeUSD = ZERO_BD

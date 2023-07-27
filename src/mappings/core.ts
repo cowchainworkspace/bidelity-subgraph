@@ -23,7 +23,6 @@ import {
   ZERO_BD,
   BI_18,
   createLiquiditySnapshot,
-  MAX_BP
 } from './helpers'
 
 function isCompleteMint(mintId: string): boolean {
@@ -68,6 +67,7 @@ export function handleTransfer(event: Transfer): void {
   if (from.toHexString() == ADDRESS_ZERO) {
     // update total supply
     pair.totalSupply = pair.totalSupply.plus(value)
+    pair.issued = pair.issued.plus(value)
     pair.save()
 
     // create new mint if no mints so far or if last one is done already
@@ -124,6 +124,7 @@ export function handleTransfer(event: Transfer): void {
   // burn
   if (event.params.to.toHexString() == ADDRESS_ZERO && event.params.from.toHexString() == pair.id) {
     pair.totalSupply = pair.totalSupply.minus(value)
+    pair.burned = pair.burned.plus(value)
     pair.save()
 
     // this is a new instance of a logical burn
@@ -393,7 +394,6 @@ export function handleBurn(event: Burn): void {
   updateTokenDayData(token1 as Token, event)
 }
 
-
 export function handleSwap(event: Swap): void {
   let pair = Pair.load(event.address.toHexString())
   let token0 = Token.load(pair.token0)
@@ -447,6 +447,7 @@ export function handleSwap(event: Swap): void {
   pair.volumeToken1 = pair.volumeToken1.plus(amount1Total)
   pair.untrackedVolumeUSD = pair.untrackedVolumeUSD.plus(derivedAmountUSD)
   pair.txCount = pair.txCount.plus(ONE_BI)
+  pair.txCount = pair.swapsAmount.plus(ONE_BI)
   pair.save()
 
   // update global values, only used tracked amounts for volume

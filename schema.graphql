@@ -68,6 +68,8 @@ type Pair @entity {
   reserve0: BigDecimal!
   reserve1: BigDecimal!
   totalSupply: BigDecimal!
+  burned: BigDecimal!
+  issued: BigDecimal!
 
   # derived liquidity
   reserveETH: BigDecimal!
@@ -100,6 +102,7 @@ type Pair @entity {
   burns: [Burn!]! @derivedFrom(field: "pair")
   swaps: [Swap!]! @derivedFrom(field: "pair")
   lock: Boolean
+  swapsAmount: BigInt!
 }
 
 type User @entity {
