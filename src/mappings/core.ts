@@ -22,7 +22,7 @@ import {
   createLiquidityPosition,
   ZERO_BD,
   BI_18,
-  createLiquiditySnapshot
+  createLiquiditySnapshot,
 } from './helpers'
 
 function isCompleteMint(mintId: string): boolean {
@@ -67,6 +67,7 @@ export function handleTransfer(event: Transfer): void {
   if (from.toHexString() == ADDRESS_ZERO) {
     // update total supply
     pair.totalSupply = pair.totalSupply.plus(value)
+    pair.issued = pair.issued.plus(value)
     pair.save()
 
     // create new mint if no mints so far or if last one is done already
@@ -123,6 +124,7 @@ export function handleTransfer(event: Transfer): void {
   // burn
   if (event.params.to.toHexString() == ADDRESS_ZERO && event.params.from.toHexString() == pair.id) {
     pair.totalSupply = pair.totalSupply.minus(value)
+    pair.burned = pair.burned.plus(value)
     pair.save()
 
     // this is a new instance of a logical burn
@@ -445,6 +447,7 @@ export function handleSwap(event: Swap): void {
   pair.volumeToken1 = pair.volumeToken1.plus(amount1Total)
   pair.untrackedVolumeUSD = pair.untrackedVolumeUSD.plus(derivedAmountUSD)
   pair.txCount = pair.txCount.plus(ONE_BI)
+  pair.txCount = pair.swapsAmount.plus(ONE_BI)
   pair.save()
 
   // update global values, only used tracked amounts for volume
@@ -455,7 +458,7 @@ export function handleSwap(event: Swap): void {
   bidelity.txCount = bidelity.txCount.plus(ONE_BI)
 
   // save entities
-  pair.save()
+
   token0.save()
   token1.save()
   bidelity.save()
@@ -490,10 +493,16 @@ export function handleSwap(event: Swap): void {
   swap.to = event.params.to
   swap.from = event.transaction.from
   swap.logIndex = event.logIndex
+  swap.hash = event.transaction.hash.toHexString()
+  swap.token0Price = pair.token0Price
+  swap.token1Price = pair.token1Price
+
   // use the tracked amount if we have it
   swap.amountUSD = trackedAmountUSD === ZERO_BD ? derivedAmountUSD : trackedAmountUSD
+
   swap.save()
 
+  pair.save()
   // update the transaction
 
   // TODO: Consider using .concat() for handling array updates to protect

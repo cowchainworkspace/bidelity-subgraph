@@ -14,6 +14,7 @@ export let ZERO_BI = BigInt.fromI32(0)
 export let ONE_BI = BigInt.fromI32(1)
 export let ZERO_BD = BigDecimal.fromString('0')
 export let ONE_BD = BigDecimal.fromString('1')
+export let MAX_BP = BigDecimal.fromString('10000')
 export let BI_18 = BigInt.fromI32(18)
 
 export let factoryContract = FactoryContract.bind(Address.fromString(FACTORY_ADDRESS))
@@ -60,7 +61,7 @@ export function isNullEthValue(value: string): boolean {
 export function fetchTokenSymbol(tokenAddress: Address): string {
   // static definitions overrides
   let staticDefinition = TokenDefinition.fromAddress(tokenAddress)
-  if(staticDefinition != null) {
+  if (staticDefinition != null) {
     return (staticDefinition as TokenDefinition).symbol
   }
 
@@ -88,7 +89,7 @@ export function fetchTokenSymbol(tokenAddress: Address): string {
 export function fetchTokenName(tokenAddress: Address): string {
   // static definitions overrides
   let staticDefinition = TokenDefinition.fromAddress(tokenAddress)
-  if(staticDefinition != null) {
+  if (staticDefinition != null) {
     return (staticDefinition as TokenDefinition).name
   }
 
@@ -126,7 +127,7 @@ export function fetchTokenTotalSupply(tokenAddress: Address): BigInt {
 export function fetchTokenDecimals(tokenAddress: Address): BigInt {
   // static definitions overrides
   let staticDefinition = TokenDefinition.fromAddress(tokenAddress)
-  if(staticDefinition != null) {
+  if (staticDefinition != null) {
     return (staticDefinition as TokenDefinition).decimals
   }
 

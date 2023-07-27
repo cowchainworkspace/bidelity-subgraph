@@ -1,6 +1,6 @@
 /* eslint-disable prefer-const */
 import { log } from '@graphprotocol/graph-ts'
-import { PairCreated, SetSwapFeeBPCall } from '../types/Factory/Factory'
+import { PairCreated, SetSwapFeeBPCall, LockCall, UnlockCall } from '../types/Factory/Factory'
 import { Bundle, Pair, Token, BidelityFactory } from '../types/schema'
 import { Pair as PairTemplate } from '../types/templates'
 import {
@@ -26,7 +26,9 @@ function loadFactory(): BidelityFactory {
     factory.totalLiquidityUSD = ZERO_BD
     factory.txCount = ZERO_BI
 
-    factory.profit = factoryContract.swapFeeBP()
+    factory.swapFeeBP = factoryContract.swapFeeBP()
+    factory.removeLiquidityFeeBP = factoryContract.removeLiquidityFeeBP()
+    factory.addLiquidityFeeBP = factoryContract.addLiquidityFeeBP()
 
     // create new bundle
     let bundle = new Bundle('1')
@@ -51,7 +53,9 @@ export function handleNewPair(event: PairCreated): void {
     factory.totalLiquidityUSD = ZERO_BD
     factory.txCount = ZERO_BI
 
-    factory.profit = factoryContract.swapFeeBP()
+    factory.swapFeeBP = factoryContract.swapFeeBP()
+    factory.removeLiquidityFeeBP = factoryContract.removeLiquidityFeeBP()
+    factory.addLiquidityFeeBP = factoryContract.addLiquidityFeeBP()
 
     // create new bundle
     let bundle = new Bundle('1')
@@ -118,12 +122,15 @@ export function handleNewPair(event: PairCreated): void {
   pair.createdAtTimestamp = event.block.timestamp
   pair.createdAtBlockNumber = event.block.number
   pair.txCount = ZERO_BI
+  pair.swapsAmount = ZERO_BI
   pair.reserve0 = ZERO_BD
   pair.reserve1 = ZERO_BD
   pair.trackedReserveETH = ZERO_BD
   pair.reserveETH = ZERO_BD
   pair.reserveUSD = ZERO_BD
   pair.totalSupply = ZERO_BD
+  pair.burned = ZERO_BD
+  pair.issued = ZERO_BD
   pair.volumeToken0 = ZERO_BD
   pair.volumeToken1 = ZERO_BD
   pair.volumeUSD = ZERO_BD
@@ -142,6 +149,33 @@ export function handleNewPair(event: PairCreated): void {
 
 export function handlerSetSwapFeeBP(call: SetSwapFeeBPCall): void {
   const factory = loadFactory()
-  factory.profit = call.inputs.value
+  factory.swapFeeBP = call.inputs.value
   factory.save()
+}
+
+export function handlerSetRemoveLiquidityFeeBP(call: SetSwapFeeBPCall): void {
+  const factory = loadFactory()
+  factory.removeLiquidityFeeBP = call.inputs.value
+  factory.save()
+}
+
+export function handlerSetAddLiquidityFeeBP(call: SetSwapFeeBPCall): void {
+  const factory = loadFactory()
+  factory.addLiquidityFeeBP = call.inputs.value
+  factory.save()
+}
+
+
+export function handlerLock(call: LockCall): void {
+  const pair = Pair.load(call.inputs.pool.toHexString());
+
+  pair.lock = true;
+  pair.save()
+}
+
+export function handlerUnlock(call: LockCall): void {
+  const pair = Pair.load(call.inputs.pool.toHexString());
+
+  pair.lock = false;
+  pair.save()
 }

@@ -2,7 +2,9 @@ type BidelityFactory @entity {
   # factory address
   id: ID!
 
-  profit: BigInt!
+  swapFeeBP: BigInt!
+  removeLiquidityFeeBP: BigInt!
+  addLiquidityFeeBP: BigInt!
 
   # pair info
   pairCount: Int!
@@ -66,6 +68,8 @@ type Pair @entity {
   reserve0: BigDecimal!
   reserve1: BigDecimal!
   totalSupply: BigDecimal!
+  burned: BigDecimal!
+  issued: BigDecimal!
 
   # derived liquidity
   reserveETH: BigDecimal!
@@ -97,6 +101,8 @@ type Pair @entity {
   mints: [Mint!]! @derivedFrom(field: "pair")
   burns: [Burn!]! @derivedFrom(field: "pair")
   swaps: [Swap!]! @derivedFrom(field: "pair")
+  lock: Boolean
+  swapsAmount: BigInt!
 }
 
 type User @entity {
@@ -208,8 +214,13 @@ type Swap @entity {
   to: Bytes!
   logIndex: BigInt
 
+  token0Price: BigDecimal!
+  token1Price: BigDecimal!
+
   # derived info
   amountUSD: BigDecimal!
+
+  hash: String!
 }
 
 # stores for USD calculations
@@ -306,4 +317,9 @@ type BdltyTokens @entity(immutable: false) {
   id: ID!
   issued: BigInt!
   burned: BigInt!
+}
+
+type SwapCall @entity {
+  id: ID!
+  pair: Pair!
 }
