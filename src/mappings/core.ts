@@ -277,6 +277,8 @@ export function handleSync(event: Sync): void {
   token1.save()
 }
 
+// function createPoolTransaction(pair: Pair, user: User) {}
+
 export function handleMint(event: Mint): void {
   let transaction = Transaction.load(event.transaction.hash.toHexString())
   let mints = transaction.mints
@@ -447,7 +449,7 @@ export function handleSwap(event: Swap): void {
   pair.volumeToken1 = pair.volumeToken1.plus(amount1Total)
   pair.untrackedVolumeUSD = pair.untrackedVolumeUSD.plus(derivedAmountUSD)
   pair.txCount = pair.txCount.plus(ONE_BI)
-  pair.txCount = pair.swapsAmount.plus(ONE_BI)
+  pair.swapsAmount = pair.swapsAmount.plus(ONE_BI)
   pair.save()
 
   // update global values, only used tracked amounts for volume

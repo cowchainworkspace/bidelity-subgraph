@@ -31,7 +31,8 @@ dataSources:
     name: Factory
     network: goerli
     source:
-      address: '0xFb028d25bB919Bd484856C1c04D95239f8aa47b5'
+      # address: '0xFb028d25bB919Bd484856C1c04D95239f8aa47b5'
+      address: '0xE2928128438379374BcBC703E2C7efC388517a0a'
       abi: Factory
       startBlock: 9303827
     mapping:
