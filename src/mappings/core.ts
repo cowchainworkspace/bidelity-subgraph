@@ -503,6 +503,7 @@ export function handleSwap(event: Swap): void {
   swap.hash = event.transaction.hash.toHexString()
   swap.token0Price = pair.token0Price
   swap.token1Price = pair.token1Price
+  swap.fee = event.params.fee.toBigDecimal()
 
   // use the tracked amount if we have it
   swap.amountUSD = trackedAmountUSD === ZERO_BD ? derivedAmountUSD : trackedAmountUSD

@@ -222,6 +222,7 @@ type Swap @entity {
   amountUSD: BigDecimal!
 
   hash: String!
+  fee: BigDecimal!
 }
 
 # stores for USD calculations
