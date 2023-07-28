@@ -8,7 +8,9 @@ import {
   Mint as MintEvent,
   Burn as BurnEvent,
   Swap as SwapEvent,
-  Bundle
+  Bundle,
+  PoolTransaction,
+  User
 } from '../types/schema'
 import { Pair as PairContract, Mint, Burn, Swap, Transfer, Sync } from '../types/templates/Pair/Pair'
 import { updatePairDayData, updateTokenDayData, updateBidelityDayData, updatePairHourData } from './dayUpdates'
@@ -277,7 +279,29 @@ export function handleSync(event: Sync): void {
   token1.save()
 }
 
-// function createPoolTransaction(pair: Pair, user: User) {}
+function createPoolTransaction(
+  timestamp: BigInt,
+  hash: string,
+  pair: Pair,
+  user: User,
+  type: string,
+  fee: BigDecimal,
+  transactionAmount: BigDecimal
+): void {
+  const id = hash
+    .concat('-')
+    .concat(pair.id)
+    .concat(user.id)
+  const poolTransaction = new PoolTransaction(id)
+
+  poolTransaction.timestamp = timestamp
+  poolTransaction.pair = pair.id
+  poolTransaction.user = user.id
+  poolTransaction.type = type
+  poolTransaction.fee = fee
+  poolTransaction.transactionAmount = transactionAmount
+  poolTransaction.save()
+}
 
 export function handleMint(event: Mint): void {
   let transaction = Transaction.load(event.transaction.hash.toHexString())
@@ -337,6 +361,16 @@ export function handleMint(event: Mint): void {
   updateBidelityDayData(event)
   updateTokenDayData(token0 as Token, event)
   updateTokenDayData(token1 as Token, event)
+
+  createPoolTransaction(
+    event.block.timestamp,
+    event.transaction.hash.toHexString(),
+    pair as Pair,
+    createUser(event.transaction.from),
+    'Add liquidity',
+    amountTotalUSD,
+    fee
+  )
 }
 
 export function handleBurn(event: Burn): void {
@@ -403,6 +437,16 @@ export function handleBurn(event: Burn): void {
   updateBidelityDayData(event)
   updateTokenDayData(token0 as Token, event)
   updateTokenDayData(token1 as Token, event)
+
+  createPoolTransaction(
+    event.block.timestamp,
+    event.transaction.hash.toHexString(),
+    pair as Pair,
+    createUser(event.transaction.from),
+    'Remove liquidity',
+    amountTotalUSD,
+    fee
+  )
 }
 
 export function handleSwap(event: Swap): void {

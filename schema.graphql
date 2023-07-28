@@ -325,3 +325,13 @@ type SwapCall @entity {
   id: ID!
   pair: Pair!
 }
+
+type PoolTransaction @entity {
+  id: ID!
+  timestamp: BigInt!
+  pair: Pair!
+  user: User!
+  fee: BigDecimal!
+  transactionAmount: BigDecimal!
+  type: String!
+}
