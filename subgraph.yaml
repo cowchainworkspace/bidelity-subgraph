@@ -31,8 +31,7 @@ dataSources:
     name: Factory
     network: goerli
     source:
-      # address: '0xFb028d25bB919Bd484856C1c04D95239f8aa47b5'
-      address: '0xE2928128438379374BcBC703E2C7efC388517a0a'
+      address: '0x91C68C0437798283E809705Fa5a1Bb3C24Ea9cd9'
       abi: Factory
       startBlock: 9303827
     mapping:
@@ -86,11 +85,11 @@ templates:
         - name: Factory
           file: ./abis/factory.json
       eventHandlers:
-        - event: Mint(indexed address,uint256,uint256)
+        - event: Mint(indexed address,uint256,uint256,uint256)
           handler: handleMint
-        - event: Burn(indexed address,uint256,uint256,indexed address)
+        - event: Burn(indexed address,uint256,uint256,indexed address,uint256)
           handler: handleBurn
-        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
+        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address,uint256)
           handler: handleSwap
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer

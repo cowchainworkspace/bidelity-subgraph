@@ -8,7 +8,9 @@ import {
   Mint as MintEvent,
   Burn as BurnEvent,
   Swap as SwapEvent,
-  Bundle
+  Bundle,
+  PoolTransaction,
+  User
 } from '../types/schema'
 import { Pair as PairContract, Mint, Burn, Swap, Transfer, Sync } from '../types/templates/Pair/Pair'
 import { updatePairDayData, updateTokenDayData, updateBidelityDayData, updatePairHourData } from './dayUpdates'
@@ -22,7 +24,7 @@ import {
   createLiquidityPosition,
   ZERO_BD,
   BI_18,
-  createLiquiditySnapshot,
+  createLiquiditySnapshot
 } from './helpers'
 
 function isCompleteMint(mintId: string): boolean {
@@ -277,7 +279,29 @@ export function handleSync(event: Sync): void {
   token1.save()
 }
 
-// function createPoolTransaction(pair: Pair, user: User) {}
+function createPoolTransaction(
+  timestamp: BigInt,
+  hash: string,
+  pair: Pair,
+  user: User,
+  type: string,
+  fee: BigDecimal,
+  transactionAmount: BigDecimal
+): void {
+  const id = hash
+    .concat('-')
+    .concat(pair.id)
+    .concat(user.id)
+  const poolTransaction = new PoolTransaction(id)
+
+  poolTransaction.timestamp = timestamp
+  poolTransaction.pair = pair.id
+  poolTransaction.user = user.id
+  poolTransaction.type = type
+  poolTransaction.fee = fee
+  poolTransaction.transactionAmount = transactionAmount
+  poolTransaction.save()
+}
 
 export function handleMint(event: Mint): void {
   let transaction = Transaction.load(event.transaction.hash.toHexString())
@@ -312,6 +336,11 @@ export function handleMint(event: Mint): void {
   // save entities
   token0.save()
   token1.save()
+
+  const fee = convertTokenToDecimal(event.params.fee, BI_18)
+
+  pair.bidelityProfit = pair.bidelityProfit.plus(fee)
+
   pair.save()
   bidelity.save()
 
@@ -332,6 +361,16 @@ export function handleMint(event: Mint): void {
   updateBidelityDayData(event)
   updateTokenDayData(token0 as Token, event)
   updateTokenDayData(token1 as Token, event)
+
+  createPoolTransaction(
+    event.block.timestamp,
+    event.transaction.hash.toHexString(),
+    pair as Pair,
+    createUser(event.transaction.from),
+    'Add liquidity',
+    amountTotalUSD,
+    fee
+  )
 }
 
 export function handleBurn(event: Burn): void {
@@ -369,6 +408,10 @@ export function handleBurn(event: Burn): void {
   bidelity.txCount = bidelity.txCount.plus(ONE_BI)
   pair.txCount = pair.txCount.plus(ONE_BI)
 
+  const fee = convertTokenToDecimal(event.params.fee, BI_18)
+
+  pair.bidelityProfit = pair.bidelityProfit.plus(fee)
+
   // update global counter and save
   token0.save()
   token1.save()
@@ -394,6 +437,16 @@ export function handleBurn(event: Burn): void {
   updateBidelityDayData(event)
   updateTokenDayData(token0 as Token, event)
   updateTokenDayData(token1 as Token, event)
+
+  createPoolTransaction(
+    event.block.timestamp,
+    event.transaction.hash.toHexString(),
+    pair as Pair,
+    createUser(event.transaction.from),
+    'Remove liquidity',
+    amountTotalUSD,
+    fee
+  )
 }
 
 export function handleSwap(event: Swap): void {
@@ -498,6 +551,7 @@ export function handleSwap(event: Swap): void {
   swap.hash = event.transaction.hash.toHexString()
   swap.token0Price = pair.token0Price
   swap.token1Price = pair.token1Price
+  swap.fee = event.params.fee.toBigDecimal()
 
   // use the tracked amount if we have it
   swap.amountUSD = trackedAmountUSD === ZERO_BD ? derivedAmountUSD : trackedAmountUSD

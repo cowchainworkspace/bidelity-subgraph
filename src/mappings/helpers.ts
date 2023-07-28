@@ -160,13 +160,14 @@ export function createLiquidityPosition(exchange: Address, user: Address): Liqui
   return liquidityTokenBalance as LiquidityPosition
 }
 
-export function createUser(address: Address): void {
+export function createUser(address: Address): User {
   let user = User.load(address.toHexString())
   if (user === null) {
     user = new User(address.toHexString())
     user.usdSwapped = ZERO_BD
     user.save()
   }
+  return user as User
 }
 
 export function createLiquiditySnapshot(position: LiquidityPosition, event: EthereumEvent): void {

@@ -103,6 +103,7 @@ type Pair @entity {
   swaps: [Swap!]! @derivedFrom(field: "pair")
   lock: Boolean
   swapsAmount: BigInt!
+  bidelityProfit: BigDecimal!
 }
 
 type User @entity {
@@ -221,6 +222,7 @@ type Swap @entity {
   amountUSD: BigDecimal!
 
   hash: String!
+  fee: BigDecimal!
 }
 
 # stores for USD calculations
@@ -322,4 +324,14 @@ type BdltyTokens @entity(immutable: false) {
 type SwapCall @entity {
   id: ID!
   pair: Pair!
+}
+
+type PoolTransaction @entity {
+  id: ID!
+  timestamp: BigInt!
+  pair: Pair!
+  user: User!
+  fee: BigDecimal!
+  transactionAmount: BigDecimal!
+  type: String!
 }
