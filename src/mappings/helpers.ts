@@ -9,7 +9,7 @@ import { Factory as FactoryContract } from '../types/templates/Pair/Factory'
 type EthereumEvent = ethereum.Event
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
-export const FACTORY_ADDRESS = '0xFb028d25bB919Bd484856C1c04D95239f8aa47b5'
+export const FACTORY_ADDRESS = '0x817287aF9733b80c092b1F84390D8f0209dc924F'
 
 export let ZERO_BI = BigInt.fromI32(0)
 export let ONE_BI = BigInt.fromI32(1)
