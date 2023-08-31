@@ -168,14 +168,14 @@ export function handlerSetAddLiquidityFeeBP(call: SetSwapFeeBPCall): void {
 
 
 export function handlerLock(call: LockCall): void {
-  const pair = Pair.load(call.inputs.pool.toHexString());
+  const pair = Pair.load(call.inputs.pool.toHexString()) as Pair;
 
   pair.lock = true;
   pair.save()
 }
 
 export function handlerUnlock(call: LockCall): void {
-  const pair = Pair.load(call.inputs.pool.toHexString());
+  const pair = Pair.load(call.inputs.pool.toHexString()) as Pair;
 
   pair.lock = false;
   pair.save()

@@ -4,7 +4,7 @@ import { BigDecimal, Address, BigInt } from '@graphprotocol/graph-ts/index'
 import { ZERO_BD, factoryContract, ADDRESS_ZERO, ONE_BD, UNTRACKED_PAIRS } from './helpers'
 
 const WETH_ADDRESS = '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6'
-const USDC_WETH_PAIR = '0x208702b0cf971745d6ce5443c24fb6598666539f'
+const USDC_WETH_PAIR = '0x28D8968cA3AFD81DCB1C0e07BDdf5dbFFD764E1f'
 
 export function getEthPriceInUSD(): BigDecimal {
   // fetch eth prices for each stablecoin
@@ -73,13 +73,13 @@ export function findEthPerToken(token: Token): BigDecimal {
   for (let i = 0; i < WHITELIST.length; ++i) {
     let pairAddress = factoryContract.getPair(Address.fromString(token.id), Address.fromString(WHITELIST[i]))
     if (pairAddress.toHexString() != ADDRESS_ZERO) {
-      let pair = Pair.load(pairAddress.toHexString())
+      let pair = Pair.load(pairAddress.toHexString()) as Pair
       if (pair.token0 == token.id && pair.reserveETH.gt(MINIMUM_LIQUIDITY_THRESHOLD_ETH)) {
-        let token1 = Token.load(pair.token1)
-        return pair.token1Price.times(token1.derivedETH as BigDecimal) // return token1 per our token * Eth per token 1
+        let token1 = Token.load(pair.token1) as Token
+        return pair.token1Price.times(token1.derivedETH) // return token1 per our token * Eth per token 1
       }
       if (pair.token1 == token.id && pair.reserveETH.gt(MINIMUM_LIQUIDITY_THRESHOLD_ETH)) {
-        let token0 = Token.load(pair.token0)
+        let token0 = Token.load(pair.token0) as Token
         return pair.token0Price.times(token0.derivedETH as BigDecimal) // return token0 per our token * ETH per token 0
       }
     }
@@ -100,7 +100,7 @@ export function getTrackedVolumeUSD(
   token1: Token,
   pair: Pair
 ): BigDecimal {
-  let bundle = Bundle.load('1')
+  let bundle = Bundle.load('1') as Bundle
   let price0 = token0.derivedETH.times(bundle.ethPrice)
   let price1 = token1.derivedETH.times(bundle.ethPrice)
 
@@ -164,7 +164,7 @@ export function getTrackedLiquidityUSD(
   tokenAmount1: BigDecimal,
   token1: Token
 ): BigDecimal {
-  let bundle = Bundle.load('1')
+  let bundle = Bundle.load('1') as Bundle
   let price0 = token0.derivedETH.times(bundle.ethPrice)
   let price1 = token1.derivedETH.times(bundle.ethPrice)
 
