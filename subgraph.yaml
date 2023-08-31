@@ -5,12 +5,12 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    network: goerli
+    network: mainnet
     name: BdltyTokens
     source:
-      address: '0x43981ff140dF790BEfe60EE2e721b67aF4c114F4'
+      address: '0x4D21B0E30d94f54ef9B5324709ceB5C06F86EBa8'
       abi: BdltyTokens
-      startBlock: 9145043
+      startBlock: 18025749
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -29,11 +29,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: Factory
-    network: goerli
+    network: mainnet
     source:
       address: '0x817287aF9733b80c092b1F84390D8f0209dc924F'
       abi: Factory
-      startBlock: 9417522
+      startBlock: 18025915
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -68,7 +68,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: Pair
-    network: goerli
+    network: mainnet
     source:
       abi: Pair
     mapping:
