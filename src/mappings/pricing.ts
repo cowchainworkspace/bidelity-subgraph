@@ -3,35 +3,15 @@ import { Pair, Token, Bundle } from '../types/schema'
 import { BigDecimal, Address, BigInt } from '@graphprotocol/graph-ts/index'
 import { ZERO_BD, factoryContract, ADDRESS_ZERO, ONE_BD, UNTRACKED_PAIRS } from './helpers'
 
-const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-const USDC_WETH_PAIR = '0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc' // created 10008355
-const DAI_WETH_PAIR = '0xa478c2975ab1ea89e8196811f51a7b7ade33eb11' // created block 10042267
-const USDT_WETH_PAIR = '0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852' // created block 10093341
+const WETH_ADDRESS = '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6'
+// const USDC_WETH_PAIR = '0x28D8968cA3AFD81DCB1C0e07BDdf5dbFFD764E1f'
+const USDC_WETH_PAIR = '0x00B64e468d2C705A0907F58505536a6C8c49Ab26'
 
 export function getEthPriceInUSD(): BigDecimal {
   // fetch eth prices for each stablecoin
-  let daiPair = Pair.load(DAI_WETH_PAIR) // dai is token0
-  let usdcPair = Pair.load(USDC_WETH_PAIR) // usdc is token0
-  let usdtPair = Pair.load(USDT_WETH_PAIR) // usdt is token1
+  let usdcPair = Pair.load(USDC_WETH_PAIR)
 
-  // all 3 have been created
-  if (daiPair !== null && usdcPair !== null && usdtPair !== null) {
-    let totalLiquidityETH = daiPair.reserve1.plus(usdcPair.reserve1).plus(usdtPair.reserve0)
-    let daiWeight = daiPair.reserve1.div(totalLiquidityETH)
-    let usdcWeight = usdcPair.reserve1.div(totalLiquidityETH)
-    let usdtWeight = usdtPair.reserve0.div(totalLiquidityETH)
-    return daiPair.token0Price
-      .times(daiWeight)
-      .plus(usdcPair.token0Price.times(usdcWeight))
-      .plus(usdtPair.token1Price.times(usdtWeight))
-    // dai and USDC have been created
-  } else if (daiPair !== null && usdcPair !== null) {
-    let totalLiquidityETH = daiPair.reserve1.plus(usdcPair.reserve1)
-    let daiWeight = daiPair.reserve1.div(totalLiquidityETH)
-    let usdcWeight = usdcPair.reserve1.div(totalLiquidityETH)
-    return daiPair.token0Price.times(daiWeight).plus(usdcPair.token0Price.times(usdcWeight))
-    // USDC is the only pair so far
-  } else if (usdcPair !== null) {
+  if (usdcPair !== null) {
     return usdcPair.token0Price
   } else {
     return ZERO_BD
@@ -39,7 +19,7 @@ export function getEthPriceInUSD(): BigDecimal {
 }
 
 // token where amounts should contribute to tracked volume and liquidity
-let WHITELIST: string[] = [
+let WHITELIST_MAINNET: string[] = [
   '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH
   '0x6b175474e89094c44da98b954eedeac495271d0f', // DAI
   '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
@@ -62,6 +42,20 @@ let WHITELIST: string[] = [
   '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599' // WBTC
 ]
 
+let WHITELIST_TESTNET: string[] = [
+  '0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6', // WETH
+  '0x73967c6a0904aA032C103b4104747E88c566B1A2', // DAI
+  '0xd87ba7a50b2e7e660f678a895e4b72e7cb4ccd9c', // USDC
+  '0x509Ee0d083DdF8AC028f2a56731412edD63223B9', // USDT
+  '0x12BDBcfc9CF42fc1433A4024951B5cD05e558257', // TUSD
+  '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643', // cDAI
+  '0xCEC4a43eBB02f9B80916F1c718338169d6d5C1F0', // cUSDC
+  '0xc00e94cb662c3520282e6f5717214004a7f26888' // COMP
+]
+
+// let WHITELIST = WHITELIST_MAINNET;
+let WHITELIST = WHITELIST_TESTNET
+
 // minimum liquidity required to count towards tracked volume for pairs with small # of Lps
 let MINIMUM_USD_THRESHOLD_NEW_PAIRS = BigDecimal.fromString('400000')
 
@@ -80,13 +74,13 @@ export function findEthPerToken(token: Token): BigDecimal {
   for (let i = 0; i < WHITELIST.length; ++i) {
     let pairAddress = factoryContract.getPair(Address.fromString(token.id), Address.fromString(WHITELIST[i]))
     if (pairAddress.toHexString() != ADDRESS_ZERO) {
-      let pair = Pair.load(pairAddress.toHexString())
+      let pair = Pair.load(pairAddress.toHexString()) as Pair
       if (pair.token0 == token.id && pair.reserveETH.gt(MINIMUM_LIQUIDITY_THRESHOLD_ETH)) {
-        let token1 = Token.load(pair.token1)
-        return pair.token1Price.times(token1.derivedETH as BigDecimal) // return token1 per our token * Eth per token 1
+        let token1 = Token.load(pair.token1) as Token
+        return pair.token1Price.times(token1.derivedETH) // return token1 per our token * Eth per token 1
       }
       if (pair.token1 == token.id && pair.reserveETH.gt(MINIMUM_LIQUIDITY_THRESHOLD_ETH)) {
-        let token0 = Token.load(pair.token0)
+        let token0 = Token.load(pair.token0) as Token
         return pair.token0Price.times(token0.derivedETH as BigDecimal) // return token0 per our token * ETH per token 0
       }
     }
@@ -107,7 +101,7 @@ export function getTrackedVolumeUSD(
   token1: Token,
   pair: Pair
 ): BigDecimal {
-  let bundle = Bundle.load('1')
+  let bundle = Bundle.load('1') as Bundle
   let price0 = token0.derivedETH.times(bundle.ethPrice)
   let price1 = token1.derivedETH.times(bundle.ethPrice)
 
@@ -171,7 +165,7 @@ export function getTrackedLiquidityUSD(
   tokenAmount1: BigDecimal,
   token1: Token
 ): BigDecimal {
-  let bundle = Bundle.load('1')
+  let bundle = Bundle.load('1') as Bundle
   let price0 = token0.derivedETH.times(bundle.ethPrice)
   let price1 = token1.derivedETH.times(bundle.ethPrice)
 

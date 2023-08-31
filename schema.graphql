@@ -1,6 +1,10 @@
-type UniswapFactory @entity {
+type BidelityFactory @entity {
   # factory address
   id: ID!
+
+  swapFeeBP: BigInt!
+  removeLiquidityFeeBP: BigInt!
+  addLiquidityFeeBP: BigInt!
 
   # pair info
   pairCount: Int!
@@ -44,7 +48,7 @@ type Token @entity {
   totalLiquidity: BigDecimal!
 
   # derived prices
-  derivedETH: BigDecimal
+  derivedETH: BigDecimal!
 
   # derived fields
   tokenDayData: [TokenDayData!]! @derivedFrom(field: "token")
@@ -64,6 +68,8 @@ type Pair @entity {
   reserve0: BigDecimal!
   reserve1: BigDecimal!
   totalSupply: BigDecimal!
+  burned: BigDecimal!
+  issued: BigDecimal!
 
   # derived liquidity
   reserveETH: BigDecimal!
@@ -95,6 +101,9 @@ type Pair @entity {
   mints: [Mint!]! @derivedFrom(field: "pair")
   burns: [Burn!]! @derivedFrom(field: "pair")
   swaps: [Swap!]! @derivedFrom(field: "pair")
+  lock: Boolean
+  swapsAmount: BigInt!
+  bidelityProfit: BigDecimal!
 }
 
 type User @entity {
@@ -133,9 +142,9 @@ type Transaction @entity {
   timestamp: BigInt!
   # This is not the reverse of Mint.transaction; it is only used to
   # track incomplete mints (similar for burns and swaps)
-  mints: [Mint]!
-  burns: [Burn]!
-  swaps: [Swap]!
+  mints: [Mint!]!
+  burns: [Burn!]!
+  swaps: [Swap!]!
 }
 
 type Mint @entity {
@@ -206,8 +215,14 @@ type Swap @entity {
   to: Bytes!
   logIndex: BigInt
 
+  token0Price: BigDecimal!
+  token1Price: BigDecimal!
+
   # derived info
   amountUSD: BigDecimal!
+
+  hash: String!
+  fee: BigDecimal!
 }
 
 # stores for USD calculations
@@ -216,8 +231,8 @@ type Bundle @entity {
   ethPrice: BigDecimal! # price of ETH usd
 }
 
-# Data accumulated and condensed into day stats for all of Uniswap
-type UniswapDayData @entity {
+# Data accumulated and condensed into day stats for all of Bidelity
+type BidelityDayData @entity {
   id: ID! # timestamp rounded to current day by dividing by 86400
   date: Int!
 
@@ -298,4 +313,25 @@ type TokenDayData @entity {
 
   # price stats
   priceUSD: BigDecimal!
+}
+
+type BdltyTokens @entity(immutable: false) {
+  id: ID!
+  issued: BigInt!
+  burned: BigInt!
+}
+
+type SwapCall @entity {
+  id: ID!
+  pair: Pair!
+}
+
+type PoolTransaction @entity {
+  id: ID!
+  timestamp: BigInt!
+  pair: Pair!
+  user: User!
+  fee: BigDecimal!
+  transactionAmount: BigDecimal!
+  type: String!
 }

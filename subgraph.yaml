@@ -1,19 +1,42 @@
-specVersion: 0.0.2
-description: Uniswap is a decentralized protocol for automated token exchange on Ethereum.
-repository: https://github.com/Uniswap/uniswap-v2-subgraph
+specVersion: 0.0.4
+description: Bidelity is a decentralized protocol for automated token exchange on Ethereum.
+repository: https://github.com/cowchainworkspace/bidelity-subgraph
 schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
+    network: goerli
+    name: BdltyTokens
+    source:
+      address: '0x43981ff140dF790BEfe60EE2e721b67aF4c114F4'
+      abi: BdltyTokens
+      startBlock: 9145043
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/mappings/bdltyTokens.ts
+      entities:
+        - BdltyTokens
+      abis:
+        - name: BdltyTokens
+          file: ./abis/BdltyTokens.json
+      callHandlers:
+        - function: burn(uint256)
+          handler: burn
+        - function: mint(address,uint256)
+          handler: mint
+
+  - kind: ethereum/contract
     name: Factory
     network: goerli
     source:
-      address: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
+      address: '0x817287aF9733b80c092b1F84390D8f0209dc924F'
       abi: Factory
-      startBlock: 09247146
+      startBlock: 9417522
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       file: ./src/mappings/factory.ts
       entities:
@@ -31,6 +54,17 @@ dataSources:
       eventHandlers:
         - event: PairCreated(indexed address,indexed address,address,uint256)
           handler: handleNewPair
+      callHandlers:
+        - function: setSwapFeeBP(uint256)
+          handler: handlerSetSwapFeeBP
+        - function: setRemoveLiquidityFeeBP(uint256)
+          handler: handlerSetRemoveLiquidityFeeBP
+        - function: setAddLiquidityFeeBP(uint256)
+          handler: handlerSetAddLiquidityFeeBP
+        - function: lock(address)
+          handler: handlerLock
+        - function: unlock(address)
+          handler: handlerUnlock
 templates:
   - kind: ethereum/contract
     name: Pair
@@ -39,7 +73,7 @@ templates:
       abi: Pair
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       file: ./src/mappings/core.ts
       entities:
@@ -51,11 +85,11 @@ templates:
         - name: Factory
           file: ./abis/factory.json
       eventHandlers:
-        - event: Mint(indexed address,uint256,uint256)
+        - event: Mint(indexed address,uint256,uint256,uint256)
           handler: handleMint
-        - event: Burn(indexed address,uint256,uint256,indexed address)
+        - event: Burn(indexed address,uint256,uint256,indexed address,uint256)
           handler: handleBurn
-        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
+        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address,uint256)
           handler: handleSwap
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer

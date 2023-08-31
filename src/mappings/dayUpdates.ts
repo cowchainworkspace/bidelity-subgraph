@@ -1,31 +1,33 @@
 /* eslint-disable prefer-const */
-import { BigDecimal, BigInt, EthereumEvent } from '@graphprotocol/graph-ts'
-import { Bundle, Pair, PairDayData, Token, TokenDayData, UniswapDayData, UniswapFactory } from '../types/schema'
+import { BigDecimal, BigInt, ethereum } from '@graphprotocol/graph-ts'
+import { Bundle, Pair, PairDayData, Token, TokenDayData, BidelityDayData, BidelityFactory } from '../types/schema'
 import { PairHourData } from './../types/schema'
 import { FACTORY_ADDRESS, ONE_BI, ZERO_BD, ZERO_BI } from './helpers'
 
-export function updateUniswapDayData(event: EthereumEvent): UniswapDayData {
-  let uniswap = UniswapFactory.load(FACTORY_ADDRESS)
+type EthereumEvent = ethereum.Event
+
+export function updateBidelityDayData(event: EthereumEvent): BidelityDayData {
+  let bidelity = BidelityFactory.load(FACTORY_ADDRESS) as BidelityFactory
   let timestamp = event.block.timestamp.toI32()
   let dayID = timestamp / 86400
   let dayStartTimestamp = dayID * 86400
-  let uniswapDayData = UniswapDayData.load(dayID.toString())
-  if (uniswapDayData === null) {
-    uniswapDayData = new UniswapDayData(dayID.toString())
-    uniswapDayData.date = dayStartTimestamp
-    uniswapDayData.dailyVolumeUSD = ZERO_BD
-    uniswapDayData.dailyVolumeETH = ZERO_BD
-    uniswapDayData.totalVolumeUSD = ZERO_BD
-    uniswapDayData.totalVolumeETH = ZERO_BD
-    uniswapDayData.dailyVolumeUntracked = ZERO_BD
+  let bidelityDayData = BidelityDayData.load(dayID.toString())
+  if (bidelityDayData === null) {
+    bidelityDayData = new BidelityDayData(dayID.toString())
+    bidelityDayData.date = dayStartTimestamp
+    bidelityDayData.dailyVolumeUSD = ZERO_BD
+    bidelityDayData.dailyVolumeETH = ZERO_BD
+    bidelityDayData.totalVolumeUSD = ZERO_BD
+    bidelityDayData.totalVolumeETH = ZERO_BD
+    bidelityDayData.dailyVolumeUntracked = ZERO_BD
   }
 
-  uniswapDayData.totalLiquidityUSD = uniswap.totalLiquidityUSD
-  uniswapDayData.totalLiquidityETH = uniswap.totalLiquidityETH
-  uniswapDayData.txCount = uniswap.txCount
-  uniswapDayData.save()
+  bidelityDayData.totalLiquidityUSD = bidelity.totalLiquidityUSD
+  bidelityDayData.totalLiquidityETH = bidelity.totalLiquidityETH
+  bidelityDayData.txCount = bidelity.txCount
+  bidelityDayData.save()
 
-  return uniswapDayData as UniswapDayData
+  return bidelityDayData as BidelityDayData
 }
 
 export function updatePairDayData(event: EthereumEvent): PairDayData {
@@ -36,7 +38,7 @@ export function updatePairDayData(event: EthereumEvent): PairDayData {
     .toHexString()
     .concat('-')
     .concat(BigInt.fromI32(dayID).toString())
-  let pair = Pair.load(event.address.toHexString())
+  let pair = Pair.load(event.address.toHexString()) as Pair
   let pairDayData = PairDayData.load(dayPairID)
   if (pairDayData === null) {
     pairDayData = new PairDayData(dayPairID)
@@ -68,7 +70,7 @@ export function updatePairHourData(event: EthereumEvent): PairHourData {
     .toHexString()
     .concat('-')
     .concat(BigInt.fromI32(hourIndex).toString())
-  let pair = Pair.load(event.address.toHexString())
+  let pair = Pair.load(event.address.toHexString()) as Pair
   let pairHourData = PairHourData.load(hourPairID)
   if (pairHourData === null) {
     pairHourData = new PairHourData(hourPairID)
@@ -91,7 +93,7 @@ export function updatePairHourData(event: EthereumEvent): PairHourData {
 }
 
 export function updateTokenDayData(token: Token, event: EthereumEvent): TokenDayData {
-  let bundle = Bundle.load('1')
+  let bundle = Bundle.load('1') as Bundle
   let timestamp = event.block.timestamp.toI32()
   let dayID = timestamp / 86400
   let dayStartTimestamp = dayID * 86400
@@ -105,14 +107,14 @@ export function updateTokenDayData(token: Token, event: EthereumEvent): TokenDay
     tokenDayData = new TokenDayData(tokenDayID)
     tokenDayData.date = dayStartTimestamp
     tokenDayData.token = token.id
-    tokenDayData.priceUSD = token.derivedETH.times(bundle.ethPrice)
+    tokenDayData.priceUSD = (token.derivedETH).times(bundle.ethPrice)
     tokenDayData.dailyVolumeToken = ZERO_BD
     tokenDayData.dailyVolumeETH = ZERO_BD
     tokenDayData.dailyVolumeUSD = ZERO_BD
     tokenDayData.dailyTxns = ZERO_BI
     tokenDayData.totalLiquidityUSD = ZERO_BD
   }
-  tokenDayData.priceUSD = token.derivedETH.times(bundle.ethPrice)
+  tokenDayData.priceUSD = (token.derivedETH).times(bundle.ethPrice)
   tokenDayData.totalLiquidityToken = token.totalLiquidity
   tokenDayData.totalLiquidityETH = token.totalLiquidity.times(token.derivedETH as BigDecimal)
   tokenDayData.totalLiquidityUSD = tokenDayData.totalLiquidityETH.times(bundle.ethPrice)
